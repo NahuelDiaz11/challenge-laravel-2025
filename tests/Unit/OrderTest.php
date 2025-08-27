@@ -4,9 +4,9 @@ namespace Tests\Unit;
 
 use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
-class OrdersFeatureTest extends TestCase
+class OrderTest extends TestCase
 {
     use RefreshDatabase;
 
