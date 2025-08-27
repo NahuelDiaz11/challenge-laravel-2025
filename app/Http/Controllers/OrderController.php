@@ -40,6 +40,20 @@ class OrderController extends Controller
                         )
                     ]
                 )
+            ),
+            new OA\Response(
+                response: 500,
+                description: "Error interno del servidor",
+                content: new OA\JsonContent(
+                    type: "object",
+                    properties: [
+                        new OA\Property(
+                            property: "error",
+                            type: "string",
+                            example: "Unable to retrieve orders at this time"
+                        )
+                    ]
+                )
             )
         ]
     )]
@@ -53,7 +67,7 @@ class OrderController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'error' => 'Unable to retrieve orders at this time'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -168,6 +182,20 @@ class OrderController extends Controller
                         )
                     ]
                 )
+            ),
+            new OA\Response(
+                response: 500,
+                description: "Error interno del servidor",
+                content: new OA\JsonContent(
+                    type: "object",
+                    properties: [
+                        new OA\Property(
+                            property: "error",
+                            type: "string",
+                            example: "Unable to create order at this time"
+                        )
+                    ]
+                )
             )
         ]
     )]
@@ -278,6 +306,25 @@ class OrderController extends Controller
                         )
                     )
                 ]
+            ),
+            new OA\Response(
+                response: 500,
+                description: "Error interno del servidor",
+                content: [
+                    new OA\MediaType(
+                        mediaType: "application/json",
+                        schema: new OA\Schema(
+                            type: "object",
+                            properties: [
+                                new OA\Property(
+                                    property: "error",
+                                    type: "string",
+                                    example: "Unable to advance order status at this time"
+                                )
+                            ]
+                        )
+                    )
+                ]
             )
         ]
     )]
@@ -346,6 +393,20 @@ class OrderController extends Controller
                             property: "error",
                             type: "string",
                             example: "Order not found"
+                        )
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 500,
+                description: "Error interno del servidor",
+                content: new OA\JsonContent(
+                    type: "object",
+                    properties: [
+                        new OA\Property(
+                            property: "error",
+                            type: "string",
+                            example: "Unable to retrieve order details at this time"
                         )
                     ]
                 )
