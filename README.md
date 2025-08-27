@@ -58,6 +58,39 @@ La documentación completa de la API estará disponible en:
 
 🔗 **http://localhost/api/documentation**
 
+## 📖 Estilo de Documentación Implementado
+
+La API utiliza **atributos PHP 8** para la documentación Swagger, que es el enfoque más moderno y mantenible:
+
+```php
+#[OA\Get(
+    path: "/orders",
+    summary: "Obtener todos los pedidos activos",
+    tags: ["Pedidos"],
+    description: "Devuelve la lista de pedidos que no han sido entregados (status: initiated o sent)",
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Listado de pedidos activos",
+            content: new OA\JsonContent(
+                type: "object",
+                properties: [
+                    new OA\Property(
+                        property: "data",
+                        type: "array",
+                        items: new OA\Items(ref: "#/components/schemas/Order")
+                    )
+                ]
+            )
+        )
+    ]
+)]
+```
+Ventajas de este enfoque:
+- Sintaxis moderna con atributos PHP 8
+- Mejor legibilidad y mantenimiento
+- Validación en tiempo de desarrollo
+
 ## Endpoints principales
 
 | Método | Ruta                   | Descripción                     |
