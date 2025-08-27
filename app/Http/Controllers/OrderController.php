@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
 use App\Services\OrderService;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use OpenApi\Attributes as OA;
+use Exception;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use Throwable;
 
 #[OA\Tag(name: "Pedidos", description: "Operaciones relacionadas con pedidos")]
 class OrderController extends Controller
@@ -42,8 +45,19 @@ class OrderController extends Controller
     )]
     public function index()
     {
-        $orders = $this->service->listActive();
-        return response()->json(['data' => $orders], Response::HTTP_OK);
+        try {
+            $orders = $this->service->listActive();
+            return response()->json(['data' => $orders], Response::HTTP_OK);
+        } catch (Exception $e) {
+            Log::error('Error in OrderController@index', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Unable to retrieve orders at this time'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     #[OA\Post(
@@ -160,9 +174,22 @@ class OrderController extends Controller
     public function store(StoreOrderRequest $request)
     {
 
-        $validated = $request->validated();
-        $order = $this->service->createOrder($validated['client_name'], $validated['items']);
-        return response()->json(['data' => $order], Response::HTTP_CREATED);
+        try {
+            $validated = $request->validated();
+            $order = $this->service->createOrder($validated['client_name'], $validated['items']);
+            return response()->json(['data' => $order], Response::HTTP_CREATED);
+        } catch (Exception $e) {
+            Log::error('Error in OrderController@store', [
+                'client_name' => $request->get('client_name'),
+                'items_count' => count($request->get('items', [])),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Unable to create order at this time'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     #[OA\Post(
@@ -262,8 +289,21 @@ class OrderController extends Controller
                 return response()->json(['message' => 'Order delivered and removed.'], Response::HTTP_OK);
             }
             return response()->json(['data' => $result], Response::HTTP_OK);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
+            if (str_contains($e->getMessage(), 'not found')) {
+                return response()->json(['error' => $e->getMessage()], Response::HTTP_NOT_FOUND);
+            }
             return response()->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (Exception $e) {
+            Log::error('Error in OrderController@advance', [
+                'order_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Unable to advance order status at this time'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -314,11 +354,23 @@ class OrderController extends Controller
     )]
     public function show($id)
     {
-        $order = $this->service->getById((int)$id);
-        if (!$order) {
-            return response()->json(['error' => 'Order not found'], Response::HTTP_NOT_FOUND);
-        }
+        try {
+            $order = $this->service->getById((int)$id);
+            if (!$order) {
+                return response()->json(['error' => 'Order not found'], Response::HTTP_NOT_FOUND);
+            }
 
-        return response()->json(['data' => $order->load('items', 'logs')], Response::HTTP_OK);
+            return response()->json(['data' => $order->load('items', 'logs')], Response::HTTP_OK);
+        } catch (Exception $e) {
+            Log::error('Error in OrderController@show', [
+                'order_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Unable to retrieve order details at this time'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
