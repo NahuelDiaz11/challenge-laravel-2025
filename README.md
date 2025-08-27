@@ -20,14 +20,14 @@ cp .env.example .env
 ```
 Configurar variables de entorno según tu sistema:
 
+```env
 DB_CONNECTION=pgsql
 DB_HOST=db
 DB_PORT=5432
-DB_DATABASE=laravel
-DB_USERNAME=postgres
+DB_DATABASE=restaurant_orders
+DB_USERNAME=laravel_user
 DB_PASSWORD=secret
-REDIS_HOST=redis
-REDIS_PORT=6379
+```
 
 ### 3. Copiar el archivo de entorno
 ```bash
@@ -38,6 +38,12 @@ docker-compose up -d --build
 ```bash
 docker exec -it laravel_app composer install
 docker exec -it laravel_app php artisan key:generate
+
+docker exec -it laravel_app chmod -R 775 storage/
+docker exec -it laravel_app chown -R www-data:www-data storage/
+docker exec -it laravel_app chmod -R 775 bootstrap/cache/
+docker exec -it laravel_app chown -R www-data:www-data bootstrap/cache/
+
 docker exec -it laravel_app php artisan migrate
 ```
 
