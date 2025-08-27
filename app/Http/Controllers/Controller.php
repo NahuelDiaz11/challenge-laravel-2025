@@ -13,7 +13,7 @@ use OpenApi\Attributes as OA;
     description: "Documentación de la API de pedidos con Swagger y Laravel"
 )]
 #[OA\Server(
-    url: "http://localhost",
+    url: "http://localhost/api",
     description: "Servidor local"
 )]
 class Controller extends BaseController
