@@ -13,7 +13,7 @@ class OrderService
 {
     private OrderRepository $repo;
     private string $cacheKey = 'orders:active';
-    private int $cacheTtl = 30; // seconds
+    private int $cacheTtl = 30; 
 
     public function __construct(OrderRepository $repo)
     {
@@ -50,7 +50,6 @@ class OrderService
             $order->total = $total;
             $this->repo->save($order);
 
-            // Clean cache so next list is fresh
             Cache::forget($this->cacheKey);
 
             return $order->load('items');
@@ -72,7 +71,6 @@ class OrderService
                 default => throw new InvalidArgumentException("Cannot advance from status {$from}")
             };
 
-            // log
             OrderLog::create([
                 'order_id' => $order->id,
                 'from_status' => $from,
@@ -80,7 +78,6 @@ class OrderService
             ]);
 
             if ($to === 'delivered') {
-                // delete order (and cascade items & logs)
                 $this->repo->delete($order);
                 Cache::forget($this->cacheKey);
                 return true;
