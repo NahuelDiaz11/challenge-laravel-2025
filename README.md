@@ -45,6 +45,8 @@ docker exec -it laravel_app chmod -R 775 bootstrap/cache/
 docker exec -it laravel_app chown -R www-data:www-data bootstrap/cache/
 
 docker exec -it laravel_app php artisan migrate
+
+docker exec -it laravel_app php artisan db:seed --class=OrderSeeder
 ```
 
 ### 5. Copiar el archivo de entorno
@@ -100,6 +102,13 @@ Ventajas de este enfoque:
 | GET    | `/orders/{id}`         | Ver detalle de un pedido        |
 | POST   | `/orders/{id}/advance` | Avanzar estado del pedido       |
 
+## 🧪 Pruebas Unitarias
+
+El proyecto incluye pruebas unitarias para garantizar el correcto funcionamiento:
+```bash
+docker exec -it laravel_app php artisan test tests/Unit/OrderTest.php
+
+```
 
 ## 📝 Validaciones
 
