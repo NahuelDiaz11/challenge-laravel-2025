@@ -1,0 +1,449 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API de Pedidos",
+        "description": "Documentación de la API de pedidos con Swagger y Laravel",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost",
+            "description": "Servidor local"
+        }
+    ],
+    "paths": {
+        "/orders": {
+            "get": {
+                "tags": [
+                    "Pedidos"
+                ],
+                "summary": "Obtener todos los pedidos activos",
+                "description": "Devuelve la lista de pedidos que no han sido entregados (status: initiated o sent)",
+                "operationId": "325fd3d55bbe9bb39645269928fa4983",
+                "responses": {
+                    "200": {
+                        "description": "Listado de pedidos activos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Order"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Pedidos"
+                ],
+                "summary": "Crear un nuevo pedido",
+                "operationId": "445bab4f7dc9ea6fcd54f286c0209478",
+                "requestBody": {
+                    "description": "Datos para crear un pedido",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "client_name",
+                                    "items"
+                                ],
+                                "properties": {
+                                    "client_name": {
+                                        "description": "Nombre del cliente",
+                                        "type": "string",
+                                        "example": "Juan Pérez"
+                                    },
+                                    "items": {
+                                        "description": "Lista de items del pedido",
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "description",
+                                                "quantity",
+                                                "unit_price"
+                                            ],
+                                            "properties": {
+                                                "description": {
+                                                    "description": "Descripción del item",
+                                                    "type": "string",
+                                                    "example": "Producto A"
+                                                },
+                                                "quantity": {
+                                                    "description": "Cantidad del item",
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "unit_price": {
+                                                    "description": "Precio unitario del item",
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 10.5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "example": {
+                                "client_name": "Juan Pérez",
+                                "items": [
+                                    {
+                                        "description": "Producto A",
+                                        "quantity": 2,
+                                        "unit_price": 10.5
+                                    },
+                                    {
+                                        "description": "Producto B",
+                                        "quantity": 1,
+                                        "unit_price": 25
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pedido creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "client_name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}/advance": {
+            "post": {
+                "tags": [
+                    "Pedidos"
+                ],
+                "summary": "Avanzar estado de una orden",
+                "description": "Transición: initiated → sent → delivered. \n                  Si llega a delivered, la orden se elimina de la base de datos y del caché.",
+                "operationId": "a6530855ade7d2c7d853c2035ce0a51e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la orden",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orden actualizada correctamente o eliminada si fue entregada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Order delivered and removed."
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        {
+                                            "properties": {
+                                                "data": {
+                                                    "$ref": "#/components/schemas/Order"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error de transición de estado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Cannot advance from status delivered"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Orden no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Order not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}": {
+            "get": {
+                "tags": [
+                    "Pedidos"
+                ],
+                "summary": "Ver detalle de una orden",
+                "description": "Muestra datos completos incluyendo items, totales y estado actual.",
+                "operationId": "f088d34a2737782215f435f854e31de5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la orden",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalle de la orden con items y logs",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/OrderWithRelations"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Orden no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Order not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Order": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "client_name": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "initiated",
+                            "sent",
+                            "delivered"
+                        ],
+                        "example": "initiated"
+                    },
+                    "total": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 46
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "OrderItem": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "order_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Producto A"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "unit_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 10.5
+                    },
+                    "line_total": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 21
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "OrderLog": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "order_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "from_status": {
+                        "type": "string",
+                        "example": "initiated"
+                    },
+                    "to_status": {
+                        "type": "string",
+                        "example": "sent"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "OrderWithRelations": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Order"
+                    },
+                    {
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/OrderItem"
+                                }
+                            },
+                            "logs": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/OrderLog"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Pedidos",
+            "description": "Operaciones relacionadas con pedidos"
+        }
+    ]
+}
