@@ -29,11 +29,11 @@ DB_USERNAME=laravel_user
 DB_PASSWORD=secret
 ```
 
-### 3. Copiar el archivo de entorno
+### 3. Levantar los contenedores con Docker
 ```bash
 docker-compose up -d --build
 ```
-### 4. Copiar el archivo de entorno
+### 4. Instalar dependencias y preparar la aplicación
 
 ```bash
 docker exec -it laravel_app composer install
@@ -49,7 +49,7 @@ docker exec -it laravel_app php artisan migrate
 docker exec -it laravel_app php artisan db:seed --class=OrderSeeder
 ```
 
-### 5. Copiar el archivo de entorno
+### 5. Generar la documentación con Swagger
 
 ```bash
 docker exec -it laravel_app php artisan l5-swagger:generate
